@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/security 
+        http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<security:global-method-security
+		authentication-manager-ref="authenticationManager"
+		pre-post-annotations="enabled">
+		<security:expression-handler ref="securityExpressionHandler" />
+	</security:global-method-security>
+
+	<security:authentication-manager id="authenticationManager">
+		<security:authentication-provider>
+			<security:password-encoder hash="plaintext" />
+			<security:user-service>
+				<security:user name="empl1" password="pass1"
+					authorities="ROLE_USER" />
+				<security:user name="empl2" password="pass2"
+					authorities="ROLE_LOOSER" />
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+
+	<bean id="aclService" class="acl.security.SimpleAclService">
+		<constructor-arg ref="objectIdentityRetrievalStrategy" />
+		<constructor-arg>
+			<bean class="acl.dao.AccessPolicyDao" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="objectIdentityRetrievalStrategy"
+		class="org.springframework.security.acls.domain.ObjectIdentityRetrievalStrategyImpl" />
+
+	<bean id="securityExpressionHandler"
+		class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+		<property name="permissionEvaluator" ref="aclPermissionEvaluator" />
+	</bean>
+
+	<bean id="aclPermissionEvaluator"
+		class="org.springframework.security.acls.AclPermissionEvaluator">
+		<constructor-arg ref="aclService" />
+
+		<property name="permissionFactory" ref="defaultPermissionFactory">
+		</property>
+	</bean>
+
+	<bean id="defaultPermissionFactory"
+		class="org.springframework.security.acls.domain.DefaultPermissionFactory">
+
+		<constructor-arg>
+			<value type="java.lang.Class">acl.security.AccessPermission</value>
+		</constructor-arg>
+	</bean>
+</beans>
