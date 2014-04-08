@@ -32,7 +32,7 @@ public class ProjectsService {
      * @param description the project description
      * @return the project ID
      */
-    // This method should be accessible only to users with role EMPLOYEE
+    // This method should be accessible only to users with role USER
     @PreAuthorize("hasRole('ROLE_USER')")
     public long addProject(String description) {
         final Project project = new Project();
